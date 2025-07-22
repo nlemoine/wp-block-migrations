@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<ruleset
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/PHPCSStandards/PHP_CodeSniffer/master/phpcs.xsd"
+    name="n5s"
+>
+
+    <description>Coding standards for n5s projects</description>
+
+    <file>./src</file>
+
+    <arg value="sp"/>
+    <arg name="colors"/>
+
+    <config name="testVersion" value="8.1-"/>
+
+    <rule ref="Syde-Extra">
+        <exclude name="Syde.Files.LineLength.TooLong" />
+        <exclude name="Syde.NamingConventions.ElementNameMinimalLength.TooShort" />
+        <exclude name="Syde.Classes.DisallowGetterSetter.GetterFound" />
+        <exclude name="SlevomatCodingStandard.Classes.ForbiddenPublicProperty.ForbiddenPublicProperty" />
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Namespaces.AlphabeticallySortedUses"/>
+    <rule ref="SlevomatCodingStandard.Namespaces.UseDoesNotStartWithBackslash"/>
+
+    <rule ref="SlevomatCodingStandard.Files.TypeNameMatchesFileName">
+        <properties>
+            <property name="rootNamespaces" type="array">
+                <element key="src" value="n5s\BlockMigrations" />
+            </property>
+        </properties>
+    </rule>
+
+</ruleset>

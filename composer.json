@@ -1,0 +1,31 @@
+{
+  "name": "n5s/wp-block-migrations",
+  "description": "WordPress block migrations made easy.",
+  "type": "library",
+  "require": {
+    "alleyinteractive/wp-bulk-task": "^1.1",
+    "n5s/wp-block-visitor": "^0.1 || @dev",
+    "psr/log": "^2.0 || ^3.0",
+    "symfony/polyfill-php84": "^1.32"
+  },
+  "require-dev": {
+    "mantle-framework/testkit": "^1.7",
+    "php-stubs/wp-cli-stubs": "^2.12",
+    "roots/wordpress": "^6.8",
+    "syde/phpcs": "^1.0"
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "autoload": {
+      "psr-4": {
+          "n5s\\BlockMigrations\\": "src/"
+      }
+  },
+  "config": {
+    "allow-plugins": {
+      "alleyinteractive/composer-wordpress-autoloader": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "roots/wordpress-core-installer": true
+    }
+  }
+}
