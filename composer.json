@@ -4,6 +4,7 @@
   "type": "library",
   "require": {
     "alleyinteractive/wp-bulk-task": "^1.1",
+    "jfcherng/php-diff": "^6.16",
     "n5s/wp-block-visitor": "^0.1 || @dev",
     "psr/log": "^2.0 || ^3.0",
     "symfony/polyfill-php84": "^1.32"
