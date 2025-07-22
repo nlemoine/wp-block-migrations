@@ -164,9 +164,7 @@ class BlockMigrationCommand extends AbstractCommand
                 try {
                     $migrationsRunner->run($post);
                 } catch (\Throwable $exception) {
-                    if (WP_DEBUG) {
-                        throw $exception;
-                    }
+                    WP_DEBUG && throw $exception;
 
                     $this->logger->error($exception->getMessage());
                     return;

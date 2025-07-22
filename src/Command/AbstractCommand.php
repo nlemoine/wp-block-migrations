@@ -36,7 +36,7 @@ abstract class AbstractCommand extends WP_CLI_Command
             return;
         }
 
-        $this->logLevel = Logger::toMonologLevel(Logger::WARNING);
+        $this->logLevel = Logger::toMonologLevel(Logger::INFO);
         $assocArgs = WP_CLI::get_runner()->assoc_args ?? [];
         foreach ($this->verbosityLevelMap as $arg => $level) {
             if (isset($assocArgs[$arg]) && $assocArgs[$arg]) {

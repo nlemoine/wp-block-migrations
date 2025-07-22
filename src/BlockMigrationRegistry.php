@@ -61,11 +61,11 @@ final class BlockMigrationRegistry
     /**
      * Get all registered migrations.
      *
-     * @return BlockMigrationInterface[]
+     * @return array<string, BlockMigrationInterface>
      */
     public function all(): array
     {
-        return array_values($this->migrations);
+        return $this->migrations;
     }
 
     /**

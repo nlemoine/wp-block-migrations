@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace n5s\BlockMigrations\Migration;
 
-use n5s\BlockVisitor\Visitor\BlockVisitorInterface;
+use n5s\BlockVisitor\Visitor\TransformingBlockVisitorInterface;
 
 abstract class AbstractSingleVisitorBlockMigration extends AbstractBlockMigration
 {
@@ -13,5 +13,5 @@ abstract class AbstractSingleVisitorBlockMigration extends AbstractBlockMigratio
         parent::__construct([$this->getVisitor()]);
     }
 
-    abstract protected function getVisitor(): BlockVisitorInterface;
+    abstract protected function getVisitor(): TransformingBlockVisitorInterface;
 }
