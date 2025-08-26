@@ -137,7 +137,7 @@ class BlockMigrationCommand extends AbstractCommand
             exit;
         }
 
-        $query['fixtures'] = static fn (): array => $migrationsRunner->getFixtures();
+        $query['fixtures'] = static fn (): iterable => $migrationsRunner->getFixtures();
 
         $this->pause_side_effects();
 
@@ -150,7 +150,7 @@ class BlockMigrationCommand extends AbstractCommand
 
         $bulkTask->run(
             $query,
-            function (WP_Post $post) use ($migrationsRunner, $dryRun, $fixtures, &$totalProcessed): void {
+            function (WP_Post $post, ?string $expected = null) use ($migrationsRunner, $dryRun, $fixtures, &$totalProcessed): void {
 
                 $prevPost = clone $post;
 
@@ -172,6 +172,11 @@ class BlockMigrationCommand extends AbstractCommand
 
                 if ($this->isVeryVerbose()) { // Just so we don't compute a diff for nothing
                     $this->logger->info($this->getDiff($prevPost->post_content, $post->post_content));
+                    // There is an expected fixture, check if it matches
+                    if (is_string($expected)) {
+                        $pass = $post->post_content === $expected;
+                        $this->logger->{$pass ? 'info' : 'error'}($post->post_content === $expected ? '✔ Output matches expected fixture' : '✘ Output does not match expected fixture');
+                    }
                 }
 
                 if ($prevPost->post_content === $post->post_content) {

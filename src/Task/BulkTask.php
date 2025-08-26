@@ -28,15 +28,15 @@ class BulkTask extends Bulk_Task
             return;
         }
 
-        $items = $fixturesProvider();
-
-        foreach ($items as $index => $content) {
+        foreach ($fixturesProvider() as $label => $fixtures) {
+            $actual = is_array($fixtures) && isset($fixtures[0]) ? $fixtures[0] : $fixtures;
+            $expected = is_array($fixtures) && isset($fixtures[1]) ? $fixtures[1] : null;
             $callable(new WP_Post((object) [
                 'ID' => 0,
-                'post_title' => sprintf('Fixture %d', $index),
+                'post_title' => sprintf('Fixture "%s"', $label),
                 'post_type' => 'fixture',
-                'post_content' => $content,
-            ]));
+                'post_content' => $actual,
+            ]), $expected);
         }
     }
 }

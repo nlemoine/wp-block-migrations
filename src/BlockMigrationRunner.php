@@ -90,15 +90,15 @@ final class BlockMigrationRunner implements LoggerAwareInterface, Stringable
     /**
      * Get migration fixtures
      *
-     * @return array<string>
+     * @return iterable<string|array{'0': string, '1': string}>
      */
-    public function getFixtures(): array
+    public function getFixtures(): iterable
     {
         if (!$this->isTestable()) {
             throw new RuntimeException(sprintf('All migrations must implement the %s interface to use fixtures', TestableBlockMigrationInterface::class));
         }
 
-        return array_merge(...array_values(array_map(static fn (TestableBlockMigrationInterface $migration): array => $migration->getFixtures(), $this->migrations)));
+        yield from array_merge(...array_values(array_map(static fn (TestableBlockMigrationInterface $migration): iterable => iterator_to_array($migration->getFixtures()), $this->migrations)));
     }
 
     /**

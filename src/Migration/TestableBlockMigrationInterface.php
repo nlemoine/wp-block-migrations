@@ -7,7 +7,7 @@ namespace n5s\BlockMigrations\Migration;
 interface TestableBlockMigrationInterface extends BlockMigrationInterface
 {
     /**
-     * @return array<string>
+     * @return iterable<string, string|array{'0': string, '1': string}>
      */
-    public function getFixtures(): array;
+    public function getFixtures(): iterable;
 }
