@@ -137,7 +137,11 @@ class BlockMigrationCommand extends AbstractCommand
             exit;
         }
 
-        $query['fixtures'] = static fn (): iterable => $migrationsRunner->getFixtures();
+        if ($fixtures) {
+            $query = [
+                'fixtures' => static fn (): iterable => $migrationsRunner->getFixtures(),
+            ];
+        }
 
         $this->pause_side_effects();
 
