@@ -154,7 +154,7 @@ class BlockMigrationCommand extends AbstractCommand
 
         $bulkTask->run(
             $query,
-            function (WP_Post $post, ?string $expected = null) use ($migrationsRunner, $dryRun, $fixtures, &$totalProcessed): void {
+            function (WP_Post $post, mixed $expected = null) use ($migrationsRunner, $dryRun, $fixtures, &$totalProcessed): void {
 
                 $prevPost = clone $post;
 

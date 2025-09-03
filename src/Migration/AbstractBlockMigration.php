@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace n5s\BlockMigrations\Migration;
 
 use n5s\BlockVisitor\BlockTraverser;
-use n5s\BlockVisitor\Visitor\BlockVisitorInterface;
 use n5s\BlockVisitor\Visitor\TransformingBlockVisitorInterface;
 use Psr\Log\LoggerAwareTrait;
 use WP_Post;
@@ -22,6 +21,7 @@ abstract class AbstractBlockMigration implements BlockMigrationInterface
     public function __construct(
         private array $visitors = []
     ) {
+
         if ($this instanceof TransformingBlockVisitorInterface) {
             $this->visitors[] = $this;
         }
@@ -36,6 +36,11 @@ abstract class AbstractBlockMigration implements BlockMigrationInterface
     public function getId(): string
     {
         return $this->getName();
+    }
+
+    public function shouldRun(WP_Post $post): bool
+    {
+        return true;
     }
 
     /**
@@ -64,16 +69,12 @@ abstract class AbstractBlockMigration implements BlockMigrationInterface
 
     public function runMigration(WP_Post $post): WP_Post
     {
-        if(!isset($this->blockTraverser)) {
+        if (!isset($this->blockTraverser)) {
             $this->logger?->warning(sprintf('No visitor has been added to this migration %s', $this::class));
             return $post;
         }
 
-        $hasAnyBlock = array_any($this->getBlockNames(), static function (string $blockName) use ($post): bool {
-            return has_block($blockName, $post->post_content);
-        });
-
-        if (!$hasAnyBlock) {
+        if (!$this->shouldRun($post)) {
             return $post;
         }
 

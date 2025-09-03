@@ -8,12 +8,21 @@ use WP_Post;
 
 interface BlockMigrationInterface
 {
+    /**
+     * Run the migration for the given post.
+     *
+     * @param WP_Post $post
+     * @return WP_Post The migrated post.
+     */
     public function runMigration(WP_Post $post): WP_Post;
 
     /**
-     * @return array<string>
+     * Whether the migration should be run for the given post.
+     *
+     * @param WP_Post $post
+     * @return bool
      */
-    public function getBlockNames(): array;
+    public function shouldRun(WP_Post $post): bool;
 
     /**
      * Migration id
