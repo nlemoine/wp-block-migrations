@@ -79,7 +79,7 @@ final class BlockMigrationRunner implements LoggerAwareInterface, Stringable
         $query = array_merge_recursive(...array_values(array_map(static fn (BlockMigrationInterface $migration): array => $migration->getQueryArgs(), $this->migrations)));
 
         // Remove duplicates
-        return array_merge(array_map(static fn (array|string $value) => \is_array($value) ? array_unique($value) : $value, $query), $args);
+        return array_merge(array_map(static fn (array|string|bool|float|int $value) => \is_array($value) ? array_unique($value) : $value, $query), $args);
     }
 
     public function isTestable(): bool
