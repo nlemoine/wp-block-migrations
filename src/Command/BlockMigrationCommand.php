@@ -120,7 +120,6 @@ class BlockMigrationCommand extends AbstractCommand
 
         // Get the migrations to run
         $migrationsToRun = array_filter($blockMigrations, static fn (BlockMigrationInterface $migration): bool => \in_array($migration->getName(), $validMigrationIds, true));
-        ksort($migrationsToRun);
         $migrationIds = array_keys($migrationsToRun);
 
         // Create a chained migration
