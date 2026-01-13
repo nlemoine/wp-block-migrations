@@ -7,7 +7,7 @@ namespace n5s\BlockMigrations\Command;
 use Alley\WP_Bulk_Task\Bulk_Task_Side_Effects;
 use Alley\WP_Bulk_Task\Progress\PHP_CLI_Progress_Bar;
 use SebastianBergmann\Diff\Differ;
-use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
+use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
 use n5s\BlockMigrations\BlockMigrationRegistry;
 use n5s\BlockMigrations\BlockMigrationRunner;
 use n5s\BlockMigrations\Migration\BlockMigrationInterface;
@@ -200,7 +200,7 @@ class BlockMigrationCommand extends AbstractCommand
                         }
                     }
 
-                    if ($diffOutputPath && $diff !== '') {
+                    if ($diffOutputPath && $prevPost->post_content !== $post->post_content) {
                         $slug = sanitize_title($post->post_title) ?: 'untitled';
                         $filename = \sprintf('%s/post-%d-%s.diff', $diffOutputPath, $post->ID, $slug);
                         file_put_contents($filename, $diff);
@@ -250,7 +250,10 @@ class BlockMigrationCommand extends AbstractCommand
 
     private function getDiff(string $contentBefore, string $contentAfter): string
     {
-        $differ = new Differ(new UnifiedDiffOutputBuilder("--- before\n+++ after\n"));
+        $differ = new Differ(new StrictUnifiedDiffOutputBuilder([
+            'fromFile' => 'before',
+            'toFile' => 'after',
+        ]));
         return $differ->diff($contentBefore, $contentAfter);
     }
 }
