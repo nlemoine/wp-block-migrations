@@ -6,7 +6,8 @@ namespace n5s\BlockMigrations\Command;
 
 use Alley\WP_Bulk_Task\Bulk_Task_Side_Effects;
 use Alley\WP_Bulk_Task\Progress\PHP_CLI_Progress_Bar;
-use Jfcherng\Diff\DiffHelper;
+use SebastianBergmann\Diff\Differ;
+use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
 use n5s\BlockMigrations\BlockMigrationRegistry;
 use n5s\BlockMigrations\BlockMigrationRunner;
 use n5s\BlockMigrations\Migration\BlockMigrationInterface;
@@ -82,6 +83,9 @@ class BlockMigrationCommand extends AbstractCommand
      * [--vv]
      * : Display very verbose output
      *
+     * [--diff-output=<path>]
+     * : Save diff files to the specified folder (creates if needed)
+     *
      * ## EXAMPLES
      *
      *     wp system-migrate block mind/audio mind/gallery --dry-run
@@ -112,6 +116,7 @@ class BlockMigrationCommand extends AbstractCommand
         // Flags
         $dryRun = (bool) Utils\get_flag_value($assocArgs, 'dry-run');
         $fixtures = (bool) Utils\get_flag_value($assocArgs, 'fixtures');
+        $diffOutputPath = Utils\get_flag_value($assocArgs, 'diff-output');
 
         if ($dryRun && $fixtures) {
             $this->logger->error('The "dry-run" and "fixtures" options cannot be used together');
@@ -142,6 +147,15 @@ class BlockMigrationCommand extends AbstractCommand
             ];
         }
 
+        // Create diff output folder if specified
+        if ($diffOutputPath) {
+            $diffOutputPath = rtrim($diffOutputPath, '/\\');
+            if (!is_dir($diffOutputPath) && !mkdir($diffOutputPath, 0755, true)) {
+                $this->logger->error(\sprintf('Failed to create diff output folder: %s', $diffOutputPath));
+                exit;
+            }
+        }
+
         $this->pause_side_effects();
 
         $bulkTask = new BulkTask(
@@ -153,7 +167,7 @@ class BlockMigrationCommand extends AbstractCommand
 
         $bulkTask->run(
             $query,
-            function (WP_Post $post, mixed $expected = null) use ($migrationsRunner, $dryRun, $fixtures, &$totalProcessed): void {
+            function (WP_Post $post, mixed $expected = null) use ($migrationsRunner, $dryRun, $fixtures, $diffOutputPath, &$totalProcessed): void {
 
                 $prevPost = clone $post;
 
@@ -173,12 +187,24 @@ class BlockMigrationCommand extends AbstractCommand
                     return;
                 }
 
-                if ($this->isVeryVerbose()) { // Just so we don't compute a diff for nothing
-                    $this->logger->info($this->getDiff($prevPost->post_content, $post->post_content));
-                    // There is an expected fixture, check if it matches
-                    if (is_string($expected)) {
-                        $pass = $post->post_content === $expected;
-                        $this->logger->{$pass ? 'info' : 'error'}($post->post_content === $expected ? '✔ Output matches expected fixture' : '✘ Output does not match expected fixture');
+                // Generate diff if verbose output or diff-output is specified
+                if ($this->isVeryVerbose() || $diffOutputPath) {
+                    $diff = $this->getDiff($prevPost->post_content, $post->post_content);
+
+                    if ($this->isVeryVerbose()) {
+                        $this->logger->info($diff);
+                        // There is an expected fixture, check if it matches
+                        if (is_string($expected)) {
+                            $pass = $post->post_content === $expected;
+                            $this->logger->{$pass ? 'info' : 'error'}($pass ? '✔ Output matches expected fixture' : '✘ Output does not match expected fixture');
+                        }
+                    }
+
+                    if ($diffOutputPath && $diff !== '') {
+                        $slug = sanitize_title($post->post_title) ?: 'untitled';
+                        $filename = \sprintf('%s/post-%d-%s.diff', $diffOutputPath, $post->ID, $slug);
+                        file_put_contents($filename, $diff);
+                        $this->logger->info(\sprintf('Diff saved to %s', $filename));
                     }
                 }
 
@@ -213,6 +239,10 @@ class BlockMigrationCommand extends AbstractCommand
 
         $this->logger->info(\sprintf('Processed %d posts', $totalProcessed));
 
+        if ($diffOutputPath) {
+            $this->logger->info(\sprintf('Diff files saved to: %s', $diffOutputPath));
+        }
+
         $bulkTask->cursor->reset();
 
         $this->resume_side_effects();
@@ -220,10 +250,7 @@ class BlockMigrationCommand extends AbstractCommand
 
     private function getDiff(string $contentBefore, string $contentAfter): string
     {
-        return DiffHelper::calculate($contentBefore, $contentAfter, 'Unified', [
-            'ignoreWhitespace' => true,
-            'ignoreLineEnding' => true,
-            'detailLevel' => 'word',
-        ]);
+        $differ = new Differ(new UnifiedDiffOutputBuilder("--- before\n+++ after\n"));
+        return $differ->diff($contentBefore, $contentAfter);
     }
 }
