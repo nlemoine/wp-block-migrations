@@ -189,7 +189,9 @@ class BlockMigrationCommand extends AbstractCommand
 
                 // Generate diff if verbose output or diff-output is specified
                 if ($this->isVeryVerbose() || $diffOutputPath) {
-                    $diff = $this->getDiff($prevPost->post_content, $post->post_content);
+                    $slug = sanitize_title($post->post_title) ?: 'untitled';
+                    $postIdentifier = \sprintf('post-%d-%s', $post->ID, $slug);
+                    $diff = $this->getDiff($prevPost->post_content, $post->post_content, $postIdentifier);
 
                     if ($this->isVeryVerbose()) {
                         $this->logger->info($diff);
@@ -201,8 +203,7 @@ class BlockMigrationCommand extends AbstractCommand
                     }
 
                     if ($diffOutputPath && $prevPost->post_content !== $post->post_content) {
-                        $slug = sanitize_title($post->post_title) ?: 'untitled';
-                        $filename = \sprintf('%s/post-%d-%s.diff', $diffOutputPath, $post->ID, $slug);
+                        $filename = \sprintf('%s/%s.diff', $diffOutputPath, $postIdentifier);
                         file_put_contents($filename, $diff);
                         $this->logger->info(\sprintf('Diff saved to %s', $filename));
                     }
@@ -248,11 +249,11 @@ class BlockMigrationCommand extends AbstractCommand
         $this->resume_side_effects();
     }
 
-    private function getDiff(string $contentBefore, string $contentAfter): string
+    private function getDiff(string $contentBefore, string $contentAfter, string $filename = 'content'): string
     {
         $differ = new Differ(new StrictUnifiedDiffOutputBuilder([
-            'fromFile' => 'before',
-            'toFile' => 'after',
+            'fromFile' => 'a/' . $filename,
+            'toFile' => 'b/' . $filename,
         ]));
         return $differ->diff($contentBefore, $contentAfter);
     }
