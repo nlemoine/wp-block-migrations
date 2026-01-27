@@ -6,14 +6,14 @@ namespace n5s\BlockMigrations\Command;
 
 use Alley\WP_Bulk_Task\Bulk_Task_Side_Effects;
 use Alley\WP_Bulk_Task\Progress\PHP_CLI_Progress_Bar;
-use SebastianBergmann\Diff\Differ;
-use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
 use n5s\BlockMigrations\BlockMigrationRegistry;
 use n5s\BlockMigrations\BlockMigrationRunner;
 use n5s\BlockMigrations\Migration\BlockMigrationInterface;
 use n5s\BlockMigrations\Migration\TestableBlockMigrationInterface;
 use n5s\BlockMigrations\Task\BulkTask;
-use WP_CLI;
+use SebastianBergmann\Diff\Differ;
+use SebastianBergmann\Diff\Output\StrictUnifiedDiffOutputBuilder;
+use WP_CLI\Formatter;
 use WP_CLI\Utils;
 use WP_Post;
 use wpdb;
@@ -35,6 +35,12 @@ class BlockMigrationCommand extends AbstractCommand
     /**
      * List block migrations
      *
+     * [--fields=<fields>]
+     * : Limit the output to specific row fields. Defaults to name,description,class,has_fixtures
+     *
+     * [--format=<format>]
+     * : Render output in a particular format.
+     *
      * ## EXAMPLES
      *
      *     wp system-migrate list
@@ -50,14 +56,19 @@ class BlockMigrationCommand extends AbstractCommand
             return;
         }
 
-        WP_CLI\Utils\format_items('table', array_map(static function (BlockMigrationInterface $migration): array {
+        $fields = array_map(trim(...), explode(',', Utils\get_flag_value($assocArgs, 'fields', 'name,description,class,has_fixtures')));
+
+        $items = array_map(static function (BlockMigrationInterface $migration): array {
             return [
                 'name' => $migration->getName(),
                 'description' => $migration->getDescription(),
                 'class' => $migration::class,
                 'has_fixtures' => $migration instanceof TestableBlockMigrationInterface ? 'Yes' : 'No',
             ];
-        }, $blockMigrations), ['name', 'description', 'class', 'has_fixtures']);
+        }, $blockMigrations);
+
+        $formatter = new Formatter($assocArgs, $fields);
+        $formatter->display_items($items);
     }
 
     /**

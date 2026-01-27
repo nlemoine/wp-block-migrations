@@ -6,8 +6,8 @@ namespace n5s\BlockMigrations;
 
 use Closure;
 use n5s\BlockMigrations\Migration\BlockMigrationInterface;
-use n5s\BlockMigrations\Migration\TestableBlockMigrationInterface;
 use n5s\BlockMigrations\Migration\PrioritizedBlockMigrationInterface;
+use n5s\BlockMigrations\Migration\TestableBlockMigrationInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use RuntimeException;
