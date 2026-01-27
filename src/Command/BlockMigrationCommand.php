@@ -201,7 +201,7 @@ class BlockMigrationCommand extends AbstractCommand
                 // Generate diff if verbose output or diff-output is specified
                 if ($this->isVeryVerbose() || $diffOutputPath) {
                     $slug = sanitize_title($post->post_title) ?: 'untitled';
-                    $postIdentifier = \sprintf('post-%d-%s', $post->ID, $slug);
+                    $postIdentifier = \sprintf('%d-%s-%s', $post->ID, $slug, $post->post_type);
                     $diff = $this->getDiff($prevPost->post_content, $post->post_content, $postIdentifier);
 
                     if ($this->isVeryVerbose()) {
