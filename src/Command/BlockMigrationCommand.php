@@ -102,23 +102,31 @@ class BlockMigrationCommand extends AbstractCommand
      */
     public function run(array $args, array $assocArgs): void
     {
-        $blockMigrations = $this->registry->all();
-        $migrationIds = array_keys($blockMigrations);
-
         if (\in_array(self::ALL_MIGRATION, $args, true)) {
             if (\count($args) !== 1) {
                 $this->logger->error('The "all" option cannot be used with other migration names');
                 exit;
             }
-            $args = $migrationIds;
+            $migrationsToRun = $this->registry->all();
+        } else {
+            $migrationsToRun = [];
+            $notFound = [];
+            foreach ($args as $id) {
+                $migration = $this->registry->get($id);
+                if ($migration === null) {
+                    $notFound[] = $id;
+                    continue;
+                }
+                $migrationsToRun[$id] = $migration;
+            }
+
+            if (\count($notFound) > 0) {
+                $this->logger->error(\sprintf('The following migration names are not supported: %s', implode(', ', $notFound)));
+                exit;
+            }
         }
 
-        // Validate migrations
-        $validMigrationIds = array_intersect($migrationIds, $args);
-        if (\count($validMigrationIds) !== \count($args)) {
-            $this->logger->error(\sprintf('The following migration names are not supported: %s', implode(', ', array_diff($args, $validMigrationIds))));
-            exit;
-        }
+        $migrationIds = array_keys($migrationsToRun);
 
         // Flags
         $dryRun = (bool) Utils\get_flag_value($assocArgs, 'dry-run');
@@ -129,10 +137,6 @@ class BlockMigrationCommand extends AbstractCommand
             $this->logger->error('The "dry-run" and "fixtures" options cannot be used together');
             exit;
         }
-
-        // Get the migrations to run
-        $migrationsToRun = array_filter($blockMigrations, static fn (BlockMigrationInterface $migration): bool => \in_array($migration->getName(), $validMigrationIds, true));
-        $migrationIds = array_keys($migrationsToRun);
 
         // Create a chained migration
         $migrationsRunner = new BlockMigrationRunner($migrationsToRun);
