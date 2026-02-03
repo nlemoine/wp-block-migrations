@@ -13,15 +13,15 @@ class BlockMigrationRegistry implements BlockMigrationRegistryInterface
      */
     protected array $migrations = [];
 
-    private static ?self $instance = null;
+    private static ?BlockMigrationRegistryInterface $instance = null;
 
     private function __construct()
     {
     }
 
-    public static function getInstance(): self
+    public static function getInstance(): static
     {
-        return self::$instance ??= new self();
+        return self::$instance ??= new static();
     }
 
     public static function reset(): void
