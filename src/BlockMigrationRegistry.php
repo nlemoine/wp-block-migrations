@@ -11,7 +11,7 @@ class BlockMigrationRegistry implements BlockMigrationRegistryInterface
     /**
      * @var array<string, BlockMigrationInterface>
      */
-    private array $migrations = [];
+    protected array $migrations = [];
 
     private static ?self $instance = null;
 
