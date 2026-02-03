@@ -6,7 +6,7 @@ namespace n5s\BlockMigrations;
 
 use n5s\BlockMigrations\Migration\BlockMigrationInterface;
 
-final class BlockMigrationRegistry
+final class BlockMigrationRegistry implements BlockMigrationRegistryInterface
 {
     /**
      * @var array<string, BlockMigrationInterface>

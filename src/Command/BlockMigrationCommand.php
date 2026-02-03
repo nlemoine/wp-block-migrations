@@ -7,6 +7,7 @@ namespace n5s\BlockMigrations\Command;
 use Alley\WP_Bulk_Task\Bulk_Task_Side_Effects;
 use Alley\WP_Bulk_Task\Progress\PHP_CLI_Progress_Bar;
 use n5s\BlockMigrations\BlockMigrationRegistry;
+use n5s\BlockMigrations\BlockMigrationRegistryInterface;
 use n5s\BlockMigrations\BlockMigrationRunner;
 use n5s\BlockMigrations\Migration\BlockMigrationInterface;
 use n5s\BlockMigrations\Migration\TestableBlockMigrationInterface;
@@ -26,10 +27,13 @@ class BlockMigrationCommand extends AbstractCommand
 
     private wpdb $wpdb;
 
-    public function __construct()
+    private BlockMigrationRegistryInterface $registry;
+
+    public function __construct(?BlockMigrationRegistryInterface $registry = null)
     {
         parent::__construct();
         $this->wpdb = $GLOBALS['wpdb'];
+        $this->registry = $registry ?? BlockMigrationRegistry::getInstance();
     }
 
     /**
@@ -41,16 +45,12 @@ class BlockMigrationCommand extends AbstractCommand
      * [--format=<format>]
      * : Render output in a particular format.
      *
-     * ## EXAMPLES
-     *
-     *     wp system-migrate list
-     *
      * @param array $args
      * @param array $assocArgs
      */
     public function list(array $args, array $assocArgs): void
     {
-        $blockMigrations = BlockMigrationRegistry::getInstance()->all();
+        $blockMigrations = $this->registry->all();
         if (\count($blockMigrations) === 0) {
             $this->logger->info('No block migrations found');
             return;
@@ -97,16 +97,12 @@ class BlockMigrationCommand extends AbstractCommand
      * [--diff-output=<path>]
      * : Save diff files to the specified folder (creates if needed)
      *
-     * ## EXAMPLES
-     *
-     *     wp system-migrate block mind/audio mind/gallery --dry-run
-     *
      * @param array $args
      * @param array $assocArgs
      */
     public function run(array $args, array $assocArgs): void
     {
-        $blockMigrations = BlockMigrationRegistry::getInstance()->all();
+        $blockMigrations = $this->registry->all();
         $migrationIds = array_keys($blockMigrations);
 
         if (\in_array(self::ALL_MIGRATION, $args, true)) {

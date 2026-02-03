@@ -15,6 +15,8 @@ abstract class AbstractBlockMigration implements BlockMigrationInterface
 
     private BlockTraverser $blockTraverser;
 
+    protected WP_Post $currentPost;
+
     /**
      * @param TransformingBlockVisitorInterface[] $visitors
      */
@@ -78,6 +80,7 @@ abstract class AbstractBlockMigration implements BlockMigrationInterface
             return $post;
         }
 
+        $this->currentPost = $post;
         $this->logger?->info(sprintf('Running %s migration on post %d', $this->getName(), $post->ID));
         $post->post_content = (string) $this->blockTraverser->traverse($post->post_content);
 
