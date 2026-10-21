@@ -6,6 +6,7 @@ namespace n5s\BlockMigrations\Monolog\Handler;
 
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Logger;
+use Monolog\LogRecord;
 use WP_CLI;
 
 class WpCliHandler extends AbstractProcessingHandler
@@ -13,12 +14,19 @@ class WpCliHandler extends AbstractProcessingHandler
     /**
      * Write a log to the wp-cli.
      *
-     * @param array $record Log Record.
+     * Untyped so that it overrides both write(array $record) from Monolog 2 and write(LogRecord $record) from Monolog 3.
+     *
+     * @param array|LogRecord $record Log Record.
      */
-    protected function write(array $record): void
+    // phpcs:ignore Syde.Functions.ArgumentTypeDeclaration.NoArgumentType
+    protected function write($record): void
     {
         if (!\defined('WP_CLI') || !\WP_CLI) {
             return;
+        }
+
+        if ($record instanceof LogRecord) {
+            $record = $record->toArray();
         }
 
         if (empty($record['level']) || empty($record['message']) || empty($record['level_name'])) {
